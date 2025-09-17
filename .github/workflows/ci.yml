@@ -27,6 +27,12 @@ jobs:
           python app/app.py > run.out 2> run.err
           code=$?
           echo "exit_code=$code" >> $GITHUB_OUTPUT
+          # Explicitly set outcome based on the exit code
+          if [ $code -ne 0 ]; then
+            echo "status=failure" >> $GITHUB_OUTPUT
+          else
+            echo "status=success" >> $GITHUB_OUTPUT
+          fi
           echo "err<<EOF" >> $GITHUB_OUTPUT
           tail -n 120 run.err >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -43,9 +49,12 @@ jobs:
         run: |
           # Set and export environment variables for the Python script to use
           export STATUS="${OUTCOME}"
-          if [ "$STATUS" = "failure" ]; then
+          # Use exit code as a more reliable indicator
+          if [ "${{ steps.runapp.outputs.exit_code }}" != "0" ]; then
+            export STATUS="failure"
             export CONTEXT="${{ steps.runapp.outputs.err }}"
           else
+            export STATUS="success"
             export CONTEXT="Build passed. Dependencies OK."
           fi
 
@@ -72,7 +81,7 @@ jobs:
           REPO: ${{ github.repository }}
           BRANCH: ${{ github.ref_name }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          OUTCOME: ${{ steps.runapp.outcome }}
+          OUTCOME: ${{ steps.runapp.outputs.status || steps.runapp.outcome }}
           AI_SUMMARY: ${{ steps.ai.outputs.summary }}
         run: |
           set -e
@@ -95,5 +104,5 @@ jobs:
 
       # Keep run status accurate (first run should be red)
       - name: Enforce failure if app failed
-        if: steps.runapp.outcome == 'failure'
+        if: steps.runapp.outputs.status == 'failure'
         run: exit 1
