@@ -6,10 +6,26 @@ import sys
 def generate_ai_summary():
     # Get environment variables
     try:
-        endpoint = os.environ['AOAI_ENDPOINT'].rstrip('/')
-        deployment = os.environ['AOAI_DEPLOYMENT']
-        key = os.environ['AOAI_KEY']
-        status = os.environ['STATUS']
+        # Print debug info for troubleshooting
+        print("DEBUG: Environment variables available:", list(os.environ.keys()), file=sys.stderr)
+        
+        # Get required environment variables with better error handling
+        endpoint = os.environ.get('AOAI_ENDPOINT', '')
+        if not endpoint:
+            raise ValueError("AOAI_ENDPOINT environment variable is not set")
+        endpoint = endpoint.rstrip('/')
+            
+        deployment = os.environ.get('AOAI_DEPLOYMENT', '')
+        if not deployment:
+            raise ValueError("AOAI_DEPLOYMENT environment variable is not set")
+            
+        key = os.environ.get('AOAI_KEY', '')
+        if not key:
+            raise ValueError("AOAI_KEY environment variable is not set")
+            
+        status = os.environ.get('STATUS', '')
+        if not status:
+            raise ValueError("STATUS environment variable is not set")
         
         # Read the prompt from file
         with open('prompt.txt', 'r') as f:

@@ -41,11 +41,12 @@ jobs:
           AOAI_DEPLOYMENT: ${{ secrets.AOAI_DEPLOYMENT }}
           OUTCOME: ${{ steps.runapp.outcome }}
         run: |
-          STATUS="${OUTCOME}"
+          # Set and export environment variables for the Python script to use
+          export STATUS="${OUTCOME}"
           if [ "$STATUS" = "failure" ]; then
-            CONTEXT="${{ steps.runapp.outputs.err }}"
+            export CONTEXT="${{ steps.runapp.outputs.err }}"
           else
-            CONTEXT="Build passed. Dependencies OK."
+            export CONTEXT="Build passed. Dependencies OK."
           fi
 
           # Build a clear prompt
@@ -55,6 +56,10 @@ jobs:
           line for requirements.txt if applicable. Keep it under 4 lines total.
           P
 
+          # Debug environment variables to verify they're set
+          echo "Debug: STATUS=$STATUS"
+          echo "Debug: CONTEXT length=$(echo "$CONTEXT" | wc -c)"
+          
           # Execute the external Python script
           python ai/generate_summary.py
 
