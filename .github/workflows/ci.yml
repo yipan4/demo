@@ -60,8 +60,9 @@ jobs:
           echo "Debug: STATUS=$STATUS"
           echo "Debug: CONTEXT length=$(echo "$CONTEXT" | wc -c)"
           
-          # Execute the external Python script
-          python ai/generate_summary.py
+          # Execute the external Python script and capture the output
+          # The script will print to GITHUB_OUTPUT format with the summary<<EOF syntax
+          python ai/generate_summary.py >> $GITHUB_OUTPUT
 
       # Notify Power Automate regardless of outcome, with AI summary text
       - name: Notify Power Automate (Teams) about result
