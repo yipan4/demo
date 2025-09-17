@@ -70,12 +70,40 @@ jobs:
           For successful builds, confirm what's working correctly and any optional improvements.
           Keep your response under 6 lines for each section and prioritize accuracy over verbosity.
           P
-          
+
           # Execute the external Python script and capture the output
           # The script will print to GITHUB_OUTPUT format with the summary<<EOF syntax
           python ai/generate_summary.py >> $GITHUB_OUTPUT
 
       # Notify Power Automate regardless of outcome, with AI summary text
+      #   - name: Notify Power Automate (Teams) about result
+      #     if: always()
+      #     env:
+      #       FLOW_URL: ${{ secrets.PA_FLOW_URL }}
+      #       REPO: ${{ github.repository }}
+      #       BRANCH: ${{ github.ref_name }}
+      #       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      #       OUTCOME: ${{ steps.runapp.outputs.status || steps.runapp.outcome }}
+      #       AI_SUMMARY: ${{ steps.ai.outputs.summary }}
+      #     run: |
+      #       set -e
+      #       STATUS="${OUTCOME}"
+      #       if [ "$STATUS" = "failure" ]; then
+      #         TITLE="CI Failure"
+      #         COLOR="D93F0B"
+      #       else
+      #         TITLE="CI Success"
+      #         COLOR="36A64F"
+      #       fi
+      #       TEXT="${AI_SUMMARY:-Build result summary unavailable.}"
+
+      #       # Create JSON payload
+      #       JSON_PAYLOAD='{"title":"'"${TITLE}: ${REPO} (${BRANCH})"'","text":"'"${TEXT}"'","color":"'"${COLOR}"'","run_url":"'"${RUN_URL}"'","repo":"'"${REPO}"'","branch":"'"${BRANCH}"'","status":"'"${STATUS}"'"}'
+
+      #       # Send to Power Automate using HTTP Webhook
+      #       # With HTTP Webhook, authentication is built into the URL, so no additional auth headers needed
+      #       curl -sS -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
+
       - name: Notify Power Automate (Teams) about result
         if: always()
         env:
@@ -86,23 +114,39 @@ jobs:
           OUTCOME: ${{ steps.runapp.outputs.status || steps.runapp.outcome }}
           AI_SUMMARY: ${{ steps.ai.outputs.summary }}
         run: |
-          set -e
+          set -Eeuo pipefail
+
           STATUS="${OUTCOME}"
-          if [ "$STATUS" = "failure" ]; then
+          if [[ "$STATUS" == "failure" ]]; then
             TITLE="CI Failure"
             COLOR="D93F0B"
           else
             TITLE="CI Success"
             COLOR="36A64F"
           fi
+
+          # Use the AI summary or a default fallback
           TEXT="${AI_SUMMARY:-Build result summary unavailable.}"
 
-          # Create JSON payload
-          JSON_PAYLOAD='{"title":"'"${TITLE}: ${REPO} (${BRANCH})"'","text":"'"${TEXT}"'","color":"'"${COLOR}"'","run_url":"'"${RUN_URL}"'","repo":"'"${REPO}"'","branch":"'"${BRANCH}"'","status":"'"${STATUS}"'"}'
-          
-          # Send to Power Automate using HTTP Webhook
-          # With HTTP Webhook, authentication is built into the URL, so no additional auth headers needed
-          curl -sS -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
+          # (Optional) Normalize CRLF just in case
+          TEXT="${TEXT//$'\r'/}"
+
+          # Build JSON safely with jq (handles newlines and quotes)
+          JSON_PAYLOAD=$(jq -n \
+            --arg title "$TITLE: $REPO ($BRANCH)" \
+            --arg text "$TEXT" \
+            --arg color "$COLOR" \
+            --arg run_url "$RUN_URL" \
+            --arg repo "$REPO" \
+            --arg branch "$BRANCH" \
+            --arg status "$STATUS" \
+            '{title:$title, text:$text, color:$color, run_url:$run_url, repo:$repo, branch:$branch, status:$status}')
+
+          # (Optional) Validate JSON locally (will exit non‑zero on invalid JSON)
+          jq -e . >/dev/null <<< "$JSON_PAYLOAD"
+
+          # Send to Power Automate (URL contains auth)
+          curl -sSf -H "Content-Type: application/json" --data "$JSON_PAYLOAD" "$FLOW_URL" || true
 
       # Keep run status accurate (first run should be red)
       - name: Enforce failure if app failed
