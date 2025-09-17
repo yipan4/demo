@@ -120,14 +120,13 @@ jobs:
           fi
           TEXT="${AI_SUMMARY:-Build result summary unavailable.}"
 
-          # Build JSON payload and POST to your Flow
-          PAYLOAD=$(cat <<JSON
-          {"title":"${TITLE}: ${REPO} (${BRANCH})","text":"${TEXT}","color":"${COLOR}","run_url":"${RUN_URL}","repo":"${REPO}","branch":"${BRANCH}","status":"${STATUS}"}
-            JSON
-                    )
-                    curl -sS -H 'Content-Type: application/json' -d "$PAYLOAD" "$FLOW_URL" || true
+          # Create JSON payload
+          JSON_PAYLOAD='{"title":"'"${TITLE}: ${REPO} (${BRANCH})"'","text":"'"${TEXT}"'","color":"'"${COLOR}"'","run_url":"'"${RUN_URL}"'","repo":"'"${REPO}"'","branch":"'"${BRANCH}"'","status":"'"${STATUS}"'"}'
+          
+          # Send to Power Automate
+          curl -sS -H 'Content-Type: application/json' -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
 
-                # Keep run status accurate (first run should be red)
-                - name: Enforce failure if app failed
-                    if: steps.runapp.outcome == 'failure'
-                    run: exit 1
+      # Keep run status accurate (first run should be red)
+      - name: Enforce failure if app failed
+        if: steps.runapp.outcome == 'failure'
+        run: exit 1
