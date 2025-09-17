@@ -60,12 +60,15 @@ jobs:
 
           # Build a clear prompt
           cat > prompt.txt <<'P'
-          You are an expert CI assistant helping developers fix build failures. Analyze the build outcome and error logs to:
+          # Role: 
+          You are an expert CI assistant helping developers fix build failures. 
+          ## Task:
+          Analyze the build outcome and error logs to:
 
-          1. ISSUE: Clearly identify the specific error or problem in one concise sentence
+          1. ISSUE: Clearly identify the specific error or problem in concise sentences
           2. CAUSE: Explain the root cause of the issue (e.g., missing dependency, syntax error)
-          3. FIX: Provide ONE specific, ready-to-use fix command or code change (e.g., "Add 'requests==2.31.0' to requirements.txt")
-          4. NEXT: Suggest ONE follow-up action the developer should take after applying the fix
+          3. FIX: Provide specific, ready-to-use fix command or code change
+          4. NEXT: Suggest follow-up actions the developer should take after applying the fix
 
           For successful builds, confirm what's working correctly and any optional improvements.
           Keep your response under 6 lines for each section and prioritize accuracy over verbosity.
