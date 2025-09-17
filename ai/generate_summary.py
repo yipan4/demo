@@ -42,8 +42,7 @@ def generate_ai_summary():
             "messages": [
                 {"role": "system", "content": "You are an expert CI assistant."},
                 {"role": "user", "content": base_prompt + "\n\n" + context}
-            ],
-            "temperature": 0.2
+            ]
         }
         
         # Make the request to Azure OpenAI
