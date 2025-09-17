@@ -16,7 +16,6 @@ def process_data(data: pd.DataFrame) -> pd.DataFrame:
         data['value'] = (data['value'] - data['value'].mean()) / data['value'].std()
     return data
 
-# Simple neural network model
 class SimpleNN(torch.nn.Module):
     def __init__(self, input_size: int, hidden_size: int, output_size: int):
         super(SimpleNN, self).__init__()
@@ -30,7 +29,6 @@ class SimpleNN(torch.nn.Module):
         out = self.fc2(out)
         return out
 
-# Train model 
 def train_model(data: pd.DataFrame):
     if 'value' not in data.columns:
         raise ValueError("Data must contain 'value' column for training.")
