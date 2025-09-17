@@ -1,0 +1,56 @@
+    name: CI
+    on: [push, pull_request]
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+
+          - name: Set up Python
+            uses: actions/setup-python@v5
+            with:
+              python-version: '3.11'
+
+          - name: Install deps
+            run: |
+              python -m pip install --upgrade pip
+              pip install -r app/requirements.txt
+
+          - name: Run app (expected to fail first run)
+            id: runapp
+            continue-on-error: true
+            run: |
+              python app/app.py
+
+          - name: Notify Power Automate (Teams) about result
+            if: always()
+            env:
+              FLOW_URL: ${{ secrets.PA_FLOW_URL }}
+              REPO: ${{ github.repository }}
+              BRANCH: ${{ github.ref_name }}
+              RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+              OUTCOME: ${{ steps.runapp.outcome }}
+            run: |
+              set -e
+              STATUS="${OUTCOME}"
+              if [ "$STATUS" = "failure" ]; then
+                TITLE="CI Failure"
+                TEXT="Build failed. Likely cause: ModuleNotFoundError: requests. Suggested fix: add requests==2.31.0 and upgrade flask to 2.3.3."
+                COLOR="D93F0B"
+              else
+                TITLE="CI Success"
+                TEXT="Build passed. Dependencies OK."
+                COLOR="36A64F"
+              fi
+              # Build JSON payload without jq
+              PAYLOAD=$(cat <<JSON
+              {"title":"${TITLE}: ${REPO} (${BRANCH})","text":"${TEXT}","color":"${COLOR}","run_url":"${RUN_URL}","repo":"${REPO}","branch":"${BRANCH}","status":"${STATUS}"}
+JSON
+              )
+              curl -sS -H 'Content-Type: application/json' -d "$PAYLOAD" "$FLOW_URL" || true
+
+          - name: Enforce failure if app failed
+            if: steps.runapp.outcome == 'failure'
+            run: exit 1
