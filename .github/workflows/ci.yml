@@ -70,11 +70,11 @@ jobs:
             {ctx}""".format(status=status, ctx=os.environ.get('CONTEXT','(none)'))
 
             body = {
-            "messages": [
-                {"role": "system", "content": "You are an expert CI assistant."},
-                {"role": "user", "content": base_prompt + "\n\n" + context}
-            ],
-            "temperature": 0.2
+                "messages": [
+                    {"role": "system", "content": "You are an expert CI assistant."},
+                    {"role": "user", "content": base_prompt + "\n\n" + context}
+                ],
+                "temperature": 0.2
             }
             import urllib.request
             req = urllib.request.Request(
