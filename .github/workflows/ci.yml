@@ -39,7 +39,7 @@ jobs:
 
       # Use Azure OpenAI to generate a dynamic summary
       - name: Summarize result with Azure OpenAI
-        if: always()
+        if: steps.runapp.outputs.status == 'failure'
         id: ai
         env:
           AOAI_ENDPOINT: ${{ secrets.AOAI_ENDPOINT }}
@@ -74,35 +74,6 @@ jobs:
           # Execute the external Python script and capture the output
           # The script will print to GITHUB_OUTPUT format with the summary<<EOF syntax
           python ai/generate_summary.py >> $GITHUB_OUTPUT
-
-      # Notify Power Automate regardless of outcome, with AI summary text
-      #   - name: Notify Power Automate (Teams) about result
-      #     if: always()
-      #     env:
-      #       FLOW_URL: ${{ secrets.PA_FLOW_URL }}
-      #       REPO: ${{ github.repository }}
-      #       BRANCH: ${{ github.ref_name }}
-      #       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-      #       OUTCOME: ${{ steps.runapp.outputs.status || steps.runapp.outcome }}
-      #       AI_SUMMARY: ${{ steps.ai.outputs.summary }}
-      #     run: |
-      #       set -e
-      #       STATUS="${OUTCOME}"
-      #       if [ "$STATUS" = "failure" ]; then
-      #         TITLE="CI Failure"
-      #         COLOR="D93F0B"
-      #       else
-      #         TITLE="CI Success"
-      #         COLOR="36A64F"
-      #       fi
-      #       TEXT="${AI_SUMMARY:-Build result summary unavailable.}"
-
-      #       # Create JSON payload
-      #       JSON_PAYLOAD='{"title":"'"${TITLE}: ${REPO} (${BRANCH})"'","text":"'"${TEXT}"'","color":"'"${COLOR}"'","run_url":"'"${RUN_URL}"'","repo":"'"${REPO}"'","branch":"'"${BRANCH}"'","status":"'"${STATUS}"'"}'
-
-      #       # Send to Power Automate using HTTP Webhook
-      #       # With HTTP Webhook, authentication is built into the URL, so no additional auth headers needed
-      #       curl -sS -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
 
       - name: Notify Power Automate (Teams) about result
         if: always()
