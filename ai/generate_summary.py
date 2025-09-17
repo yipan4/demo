@@ -84,15 +84,19 @@ def generate_ai_summary():
             
             # Provide a structured fallback message that follows our format
             if "CONTEXT" in os.environ and "requests" in os.environ.get("CONTEXT", ""):
-                fallback = """ISSUE: Python ModuleNotFoundError: No module named 'requests'
-CAUSE: The requests library is required but not listed in requirements.txt
-FIX: Add 'requests==2.31.0' to requirements.txt
-NEXT: Consider upgrading flask from 0.12 to 2.3.3 as it contains security fixes"""
+                fallback = """
+                    ISSUE: Python ModuleNotFoundError: No module named 'requests'
+                    CAUSE: The requests library is required but not listed in requirements.txt
+                    FIX: Add 'requests==2.31.0' to requirements.txt
+                    NEXT: Consider upgrading flask from 0.12 to 2.3.3 as it contains security fixes
+                """
             else:
-                fallback = """ISSUE: AI summary service unavailable (HTTP error {})
-CAUSE: Unable to connect to Azure OpenAI API
-FIX: Check Azure OpenAI service status and credentials
-NEXT: Manually review build logs for any obvious errors""".format(e.code)
+                fallback = """  
+                    ISSUE: AI summary service unavailable (HTTP error {})
+                    CAUSE: Unable to connect to Azure OpenAI API
+                    FIX: Check Azure OpenAI service status and credentials
+                    NEXT: Manually review build logs for any obvious errors
+                """.format(e.code)
                 
             print(f"summary<<EOF\n{fallback}\nEOF")
         except Exception as e:
@@ -100,20 +104,26 @@ NEXT: Manually review build logs for any obvious errors""".format(e.code)
             
             # Provide a structured fallback message based on the error
             if "STATUS" in str(e):
-                fallback = """ISSUE: Missing STATUS environment variable
-CAUSE: The CI workflow isn't properly exporting the STATUS variable
-FIX: Add 'export STATUS=' before running the Python script
-NEXT: Check other environment variables are correctly passed"""
+                fallback = """
+                    ISSUE: Missing STATUS environment variable
+                    CAUSE: The CI workflow isn't properly exporting the STATUS variable
+                    FIX: Add 'export STATUS=' before running the Python script
+                    NEXT: Check other environment variables are correctly passed
+                """
             elif "CONTEXT" in os.environ and "requests" in os.environ.get("CONTEXT", ""):
-                fallback = """ISSUE: Python ModuleNotFoundError: No module named 'requests'
-CAUSE: The requests library is required but not listed in requirements.txt
-FIX: Add 'requests==2.31.0' to requirements.txt
-NEXT: Consider upgrading flask from 0.12 to 2.3.3 as it contains security fixes"""
+                fallback = """
+                    ISSUE: Python ModuleNotFoundError: No module named 'requests'
+                    CAUSE: The requests library is required but not listed in requirements.txt
+                    FIX: Add 'requests==2.31.0' to requirements.txt
+                    NEXT: Consider upgrading flask from 0.12 to 2.3.3 as it contains security fixes
+                """
             else:
-                fallback = """ISSUE: AI summary generation failed ({})
-CAUSE: Error while processing build information
-FIX: Check logs for detailed error information
-NEXT: Ensure all required environment variables are set""".format(str(e)[:40])
+                fallback = """
+                    ISSUE: AI summary generation failed ({})
+                    CAUSE: Error while processing build information
+                    FIX: Check logs for detailed error information
+                    NEXT: Ensure all required environment variables are set
+                """.format(str(e)[:40])
                 
             print(f"summary<<EOF\n{fallback}\nEOF")
     
