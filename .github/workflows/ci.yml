@@ -97,7 +97,7 @@ jobs:
           fi
 
           # Use the AI summary or a default fallback
-          TEXT="${AI_SUMMARY:-Build result summary unavailable.}"
+          TEXT="${AI_SUMMARY:-N/A}"
 
           # (Optional) Normalize CRLF just in case
           TEXT="${TEXT//$'\r'/}"
