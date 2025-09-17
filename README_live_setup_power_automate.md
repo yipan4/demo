@@ -6,7 +6,7 @@ This guide uses **Power Automate** as a webhook bridge to post messages into **M
 - First push: pipeline fails (missing `requests`) → Power Automate posts a **red** alert to Teams.
 - Second push: after fix → Power Automate posts a **green** success message.
 
----
+----
 
 ## 1) Create the Power Automate Flow
 1. Go to **https://make.powerautomate.com** → **Create** → **Instant cloud flow** → **Skip** → Add trigger **When an HTTP request is received**.
