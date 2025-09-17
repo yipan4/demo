@@ -83,8 +83,9 @@ jobs:
           # Create JSON payload
           JSON_PAYLOAD='{"title":"'"${TITLE}: ${REPO} (${BRANCH})"'","text":"'"${TEXT}"'","color":"'"${COLOR}"'","run_url":"'"${RUN_URL}"'","repo":"'"${REPO}"'","branch":"'"${BRANCH}"'","status":"'"${STATUS}"'"}'
           
-          # Send to Power Automate
-          curl -sS -H 'Content-Type: application/json' -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
+          # Send to Power Automate using HTTP Webhook
+          # With HTTP Webhook, authentication is built into the URL, so no additional auth headers needed
+          curl -sS -H "Content-Type: application/json" -d "${JSON_PAYLOAD}" "${FLOW_URL}" || true
 
       # Keep run status accurate (first run should be red)
       - name: Enforce failure if app failed
