@@ -18,8 +18,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r app/requirements.txt
 
-      # Run the app, but don't fail the job yet; capture logs
-      - name: Run app (expected to fail first run)
+      - name: Run app
         id: runapp
         continue-on-error: true
         run: |
@@ -37,7 +36,6 @@ jobs:
           tail -n 120 run.err >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # Use Azure OpenAI to generate a dynamic summary
       - name: Summarize result with Azure OpenAI
         if: steps.runapp.outputs.status == 'failure'
         id: ai
@@ -58,7 +56,6 @@ jobs:
             export CONTEXT="Build passed. Dependencies OK."
           fi
 
-          # Build a clear prompt
           cat > prompt.txt <<'P'
           # Role: 
           You are an expert CI assistant helping developers fix build failures. 
@@ -102,7 +99,7 @@ jobs:
           # Use the AI summary or a default fallback
           TEXT="${AI_SUMMARY:-N/A}"
 
-          # (Optional) Normalize CRLF just in case
+          # Normalize CRLF just in case, occasionally format error
           TEXT="${TEXT//$'\r'/}"
 
           # Build JSON safely with jq (handles newlines and quotes)
@@ -114,15 +111,14 @@ jobs:
             --arg repo "$REPO" \
             --arg branch "$BRANCH" \
             --arg status "$STATUS" \
-            '{title:$title, text:$text, color:$color, run_url:$run_url, repo:$repo, branch:$branch, status:$status}')
+            '{title:$title, text:$text, color:$color, run_url:$run_url, repo:$repo, branch:$branch, status:$status}')"
 
-          # (Optional) Validate JSON locally (will exit non‑zero on invalid JSON)
+          # Validate JSON locally (will exit non‑zero on invalid JSON)
           jq -e . >/dev/null <<< "$JSON_PAYLOAD"
 
           # Send to Power Automate (URL contains auth)
           curl -sSf -H "Content-Type: application/json" --data "$JSON_PAYLOAD" "$FLOW_URL" || true
 
-      # Keep run status accurate (first run should be red)
       - name: Enforce failure if app failed
         if: steps.runapp.outputs.status == 'failure'
         run: exit 1
