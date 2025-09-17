@@ -70,10 +70,6 @@ jobs:
           For successful builds, confirm what's working correctly and any optional improvements.
           Keep your response under 6 lines for each section and prioritize accuracy over verbosity.
           P
-
-          # Debug environment variables to verify they're set
-          echo "Debug: STATUS=$STATUS"
-          echo "Debug: CONTEXT length=$(echo "$CONTEXT" | wc -c)"
           
           # Execute the external Python script and capture the output
           # The script will print to GITHUB_OUTPUT format with the summary<<EOF syntax

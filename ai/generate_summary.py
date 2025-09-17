@@ -6,8 +6,6 @@ import sys
 def generate_ai_summary():
     # Get environment variables
     try:
-        # Print debug info for troubleshooting
-        print("DEBUG: Environment variables available:", list(os.environ.keys()), file=sys.stderr)
         
         # Get required environment variables with better error handling
         endpoint = os.environ.get('AOAI_ENDPOINT', '')
