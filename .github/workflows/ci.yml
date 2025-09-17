@@ -55,48 +55,8 @@ jobs:
           line for requirements.txt if applicable. Keep it under 4 lines total.
           P
 
-          # Compose the request body
-          python - <<'PY'
-            import json, os, sys
-            endpoint = os.environ['AOAI_ENDPOINT'].rstrip('/')
-            deployment = os.environ['AOAI_DEPLOYMENT']
-            key = os.environ['AOAI_KEY']
-            status = os.environ['STATUS']
-            with open('prompt.txt','r') as f:
-                base_prompt = f.read()
-            context = """Outcome: {status}
-
-            Error/Context:
-            {ctx}""".format(status=status, ctx=os.environ.get('CONTEXT','(none)'))
-
-            body = {
-                "messages": [
-                    {"role": "system", "content": "You are an expert CI assistant."},
-                    {"role": "user", "content": base_prompt + "\n\n" + context}
-                ],
-                "temperature": 0.2
-            }
-            import urllib.request
-            req = urllib.request.Request(
-                f"{endpoint}/openai/deployments/{deployment}/chat/completions?api-version=2024-02-15-preview",
-                data=json.dumps(body).encode(),
-                headers={"Content-Type":"application/json","api-key":key},
-                method="POST"
-            )
-            try:
-                with urllib.request.urlopen(req, timeout=30) as resp:
-                    data = json.loads(resp.read().decode())
-                    # Try to extract the first message content robustly
-                    content = ""
-                    if "choices" in data and data["choices"]:
-                        msg = data["choices"][0].get("message", {})
-                        content = msg.get("content", "")
-                    # Output to GITHUB_OUTPUT
-                    content = content.strip() or "No AI summary generated."
-                    print(f"summary<<EOF\n{content}\nEOF")
-            except Exception as e:
-                print("summary<<EOF\nAI summary unavailable. Fallback: Build likely failed due to missing requests. Fix: add requests==2.31.0 and upgrade flask to 2.3.3.\nEOF")
-            PY
+          # Execute the external Python script
+          python ai/generate_summary.py
 
       # Notify Power Automate regardless of outcome, with AI summary text
       - name: Notify Power Automate (Teams) about result
