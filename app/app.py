@@ -10,7 +10,6 @@ def fetch_data(url: str) -> int:
     return r.status_code
 
 def process_data(data: pd.DataFrame) -> pd.DataFrame:
-    # Example processing: fill NaNs and normalize a column
     data = data.fillna(0)
     if 'value' in data.columns:
         data['value'] = (data['value'] - data['value'].mean()) / data['value'].std()

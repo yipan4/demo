@@ -2,12 +2,10 @@
 import json
 import os
 import sys
+import urllib.request
 
 def generate_ai_summary():
-    # Get environment variables
     try:
-        
-        # Get required environment variables with better error handling
         endpoint = os.environ.get('AOAI_ENDPOINT', '')
         if not endpoint:
             raise ValueError("AOAI_ENDPOINT environment variable is not set")
@@ -43,10 +41,8 @@ def generate_ai_summary():
             ]
         }
         
+
         # Make the request to Azure OpenAI
-        import urllib.request
-        
-        # Debug values before making request
         print(f"DEBUG: Making request to endpoint: {endpoint}", file=sys.stderr)
         print(f"DEBUG: Using deployment: {deployment}", file=sys.stderr)
         print(f"DEBUG: Body preview: {json.dumps(body)[:100]}...", file=sys.stderr)
@@ -82,7 +78,7 @@ def generate_ai_summary():
             error_msg = e.read().decode() if hasattr(e, 'read') else str(e)
             print(f"DEBUG: HTTP Error: {e.code} - {error_msg}", file=sys.stderr)
             
-            # Provide a structured fallback message that follows our format
+            # Provide a structured fallback message
             if "CONTEXT" in os.environ and "requests" in os.environ.get("CONTEXT", ""):
                 fallback = """
                     ISSUE: Python ModuleNotFoundError: No module named 'requests'
