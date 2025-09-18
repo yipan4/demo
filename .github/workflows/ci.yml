@@ -50,7 +50,7 @@ jobs:
           # Use exit code as a more reliable indicator
           if [ "${{ steps.runapp.outputs.exit_code }}" != "0" ]; then
             export STATUS="failure"
-            export CONTEXT="${{ steps.runapp.outputs.err }}"
+            export CONTEXT="$(printf '%s' "${{ steps.runapp.outputs.err }}" 2>/dev/null || true)"
           else
             export STATUS="success"
             export CONTEXT="Build passed. Dependencies OK."
