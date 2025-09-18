@@ -1,5 +1,5 @@
 # Live Demo (Power Automate): Push → GitHub Actions → Teams
-
+---
 This guide uses **Power Automate** as a webhook bridge to post messages into **Microsoft Teams** when your GitHub Action fails or succeeds.
 
 ## Overview
