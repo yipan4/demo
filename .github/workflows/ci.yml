@@ -111,7 +111,7 @@ jobs:
             --arg repo "$REPO" \
             --arg branch "$BRANCH" \
             --arg status "$STATUS" \
-            '{title:$title, text:$text, color:$color, run_url:$run_url, repo:$repo, branch:$branch, status:$status}')"
+            '{title:$title, text:$text, color:$color, run_url:$run_url, repo:$repo, branch:$branch, status:$status}')
 
           # Validate JSON locally (will exit non‑zero on invalid JSON)
           jq -e . >/dev/null <<< "$JSON_PAYLOAD"
