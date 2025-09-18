@@ -119,6 +119,7 @@ jobs:
           # Send to Power Automate (URL contains auth)
           curl -sSf -H "Content-Type: application/json" --data "$JSON_PAYLOAD" "$FLOW_URL" || true
 
+      # Keep run status accurate (first run should be red)
       - name: Enforce failure if app failed
         if: steps.runapp.outputs.status == 'failure'
         run: exit 1
